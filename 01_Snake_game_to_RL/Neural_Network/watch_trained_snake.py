@@ -1,11 +1,10 @@
-from turtle import Screen
-from snake import Snake
-from food import Food
+from turtle import Screen, Turtle
 from neural_network import NeuralNetwork
+from game_engine import GameEngine
 import numpy as np
 import time
 
-def load_trained_network(filepath='best_snake_brain.npz'):
+def load_trained_network(filepath='best_snake_brain_v2.npz'):
     """Load a saved network from file."""
     network = NeuralNetwork()
     data = np.load(filepath)
@@ -20,60 +19,78 @@ def play_visual(network):
     screen = Screen()
     screen.setup(width=600, height=600)
     screen.bgcolor("black")
-    screen.title("Trained AI Snake")
+    screen.title("Trained AI Snake - 50 Foods!")
     screen.tracer(0)
     
-    snake = Snake()
-    food = Food()
+    # Create visual snake using turtle
+    snake_segments = []
+    head = Turtle("square")
+    head.color("white")
+    head.penup()
+    head.goto(0, 0)
+    snake_segments.append(head)
     
-    score = 0
-    steps = 0
+    # Create visual food
+    food = Turtle("circle")
+    food.color("blue")
+    food.penup()
+    food.shapesize(0.5, 0.5)
     
-    while steps < 2000:
-        # Get state from the visual snake
-        state = snake.get_state(food)
+    # Create score display
+    score_display = Turtle()
+    score_display.hideturtle()
+    score_display.color("white")
+    score_display.penup()
+    score_display.goto(0, 270)
+    
+    # Use game engine for logic
+    game = GameEngine()
+    
+    def update_visuals():
+        """Sync turtle graphics with game engine state."""
+        # Update snake segments
+        while len(snake_segments) < len(game.snake_positions):
+            segment = Turtle("square")
+            segment.color("white")
+            segment.penup()
+            snake_segments.append(segment)
         
-        # Network decides
+        for i, pos in enumerate(game.snake_positions):
+            snake_segments[i].goto(pos[0], pos[1])
+        
+        # Update food
+        food.goto(game.food_pos[0], game.food_pos[1])
+        
+        # Update score
+        score_display.clear()
+        score_display.write(f"Score: {game.score}", align="center", font=("Arial", 24, "normal"))
+    
+    # Game loop
+    while not game.game_over and game.steps < 2000:
+        state = game.get_state()
         output = network.forward(state)
         action = np.argmax(output)
         
-        # Apply action
-        heading = snake.head.heading()
-        if action == 1:  # Left
-            new_heading = (heading + 90) % 360
-            snake.head.setheading(new_heading)
-        elif action == 2:  # Right
-            new_heading = (heading - 90) % 360
-            snake.head.setheading(new_heading)
+        game.step(action)
+        update_visuals()
         
-        snake.move()
         screen.update()
-        time.sleep(0.05)  # Adjust speed here
-        steps += 1
-        
-        # Check food collision
-        if snake.head.distance(food) < 15:
-            food.refresh()
-            snake.extend()
-            score += 1
-            print(f"Food eaten! Score: {score}")
-        
-        # Check wall collision
-        if (snake.head.xcor() > 280 or snake.head.xcor() < -280 or 
-            snake.head.ycor() > 280 or snake.head.ycor() < -280):
-            print(f"Hit wall! Final score: {score}")
-            break
-        
-        # Check tail collision
-        for segment in snake.segments[1:]:
-            if snake.head.distance(segment) < 10:
-                print(f"Hit tail! Final score: {score}")
-                break
+        time.sleep(0.03)  # Faster playback
+    
+    # Final message
+    result = Turtle()
+    result.hideturtle()
+    result.color("white")
+    result.penup()
+    result.goto(0, 0)
+    result.write(f"GAME OVER\nFinal Score: {game.score}", align="center", font=("Arial", 32, "bold"))
     
     screen.exitonclick()
 
 if __name__ == "__main__":
-    print("Loading trained snake brain...")
+    print("Loading trained snake brain (v2)...")
     network = load_trained_network()
-    print("Watching the AI play...")
+    print("Watching the AI play...\n")
+    print("This snake was trained to eat 50 foods!")
+    print("Watch how it navigates toward food and avoids walls/tail.\n")
     play_visual(network)
