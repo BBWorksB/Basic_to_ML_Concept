@@ -2,6 +2,15 @@
 
 After the use of OOP to have the snake working here are the phases we will use to impliment the Neural Network + Genetic Algorithm
 
+
+#### How to run it:
+while in the Nearal_Network folder
+
+```python
+python watch_trained_snake.py
+```
+
+
 ### Phase 1 — State Representation
 
 What does the snake "see"? You'll design a vector of numbers that describes the world. This is the input to your neural network. Every ML system starts with this question: what information does the model need?
