@@ -129,20 +129,24 @@ class GeneticTrainer:
 
 
 if __name__ == "__main__":
-    print("Starting genetic training...")
-    trainer = GeneticTrainer(population_size=50, elite_size=10)  # Bigger population
-    trainer.train(generations=100)  # More generations
+    print("=== FINAL TRAINING RUN ===")
+    trainer = GeneticTrainer(
+        population_size=100,
+        elite_size=15,
+        mutation_rate=0.12,
+        mutation_strength=0.12
+    )
+    trainer.train(generations=150)
     
-    print("\nTraining complete!")
-    print(f"Best fitness by generation:")
-    for i, fitness in enumerate(trainer.best_fitness_history[::10]):  # Every 10th generation
-        print(f"  Gen {i*10}: {fitness}")
+    print("\n=== TRAINING COMPLETE ===")
+    print(f"Final best fitness: {trainer.best_fitness_history[-1]}")
+    print(f"That's approximately {trainer.best_fitness_history[-1]//1000} foods eaten!")
     
-    # Save the best network
-    best_network = trainer.population[0]  # Already sorted by evaluate_population
-    np.savez('best_snake_brain.npz',
+    # Save
+    best_network = trainer.population[0]
+    np.savez('best_snake_brain_v2.npz',
              w_ih=best_network.weights_input_hidden,
              b_h=best_network.bias_hidden,
              w_ho=best_network.weights_hidden_output,
              b_o=best_network.bias_output)
-    print("\nBest network saved to 'best_snake_brain.npz'")
+    print("Saved as 'best_snake_brain_v2.npz'")
